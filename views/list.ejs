@@ -7,5 +7,17 @@
 
     <h1><%= kindOfDay%></h1>
    
+    <ul>
+      <% for (var i = 0; i < newListItems.length; i++) { %>
+        <li><%= newListItems[i] %></li>
+      <% } %>
+
+    </ul>
+
+    <form method="post" action="/">
+      <input type="text" class="" name="newItem" placeholder="Enter input"/>
+      <button type="submit" name="button">Add</button>
+    </form>
+   
   </body>
 </html>
