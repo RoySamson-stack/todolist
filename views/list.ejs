@@ -1,24 +1,33 @@
 <html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title>To Do list</title>
-    <link rel="stylesheet" href="css/styles.css">
-  </head>
-  <body>
 
+<head>
+  <meta charset="utf-8">
+  <title>To Do list</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+  <div class="box" id="heading">
     <h1><%= kindOfDay%></h1>
-   
-    <ul>
-      <% for (var i = 0; i < newListItems.length; i++) { %>
-        <li><%= newListItems[i] %></li>
-      <% } %>
+  </div>
 
-    </ul>
+  <div class="box">
+    <% for (var i = 0; i < newListItems.length; i++) { %>
+    <div class="item">
+      <input type="checkbox">
+      <p><%= newListItems[i] %></p>
+    </div>
+    <% } %>
 
-    <form method="post" action="/">
-      <input type="text" class="" name="newItem" placeholder="Enter input"/>
-      <button type="submit" name="button">Add</button>
+    <form class="item" method="post" action="/">
+      <input type="text" class="" name="newItem" placeholder="Enter new Item" autocomplete="off"/>
+      <button type="submit" name="button">+</button>
     </form>
-   
-  </body>
+  </div>
+
+
+
+
+</body>
+
 </html>
