@@ -1,7 +1,7 @@
 const express = require('express');
 
 const bodyParser = require('body-parser');
-const mongooose = require("mongoose")
+const mongoose = require("mongoose")
 
 
 const app = express();
@@ -10,14 +10,18 @@ const app = express();
 
 app.set('view engine', 'ejs');
 
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
 app.use(express.static("public"));
 
 
-mongoose.connect("mongodb://localhost:27017/todolistDB", {useNewUrlParser: true});
+mongoose.connect("mongodb://localhost:27017/todolistDB", {
+  useNewUrlParser: true
+});
 
 const itemsSchema = {
-    name: String,
+  name: String,
 }
 
 const Item = mongoose.model("Item", itemsSchema);
@@ -33,19 +37,53 @@ const item3 = new Item({
   name: "Buy Flour"
 })
 
+const defaultItems = [item1, item2, item3]
+
+
+// Item.insertMany(defaultItems, function (err) {
+//   if (err) {
+//     console.log(err)
+//   } else {
+//     console.log("Successfully added the items")
+//   }
+// })
+
+
 app.get("/", function (req, res) {
-      
-res.render("list", {listTitle: "Today", newListItems: items});
 
+
+
+  Item.find({}, function (err, foundItems) {
+
+    if (foundItems.length === 0) {
+      Item.insertMany(defaultItems, function (err) {
+        if (err) {
+          console.log(err)
+        } else {
+          console.log("Successfully added the items to the database")
+        }
       })
 
-      app.post("/", (req, res) =>{
-        var item = req.body.newItem;
+    }else{
+      res.render("list", {
+        listTitle: "Today",
+        newListItems: foundItems
+      });
+    }
+   
+  })
 
-        items.push(item);
 
-        res.redirect("/", )
-      })
-    app.listen(5500, function () {
-      console.log("Server is running on port 5500");
-    });
+
+})
+
+app.post("/", (req, res) => {
+  var item = req.body.newItem;
+
+  items.push(item);
+
+  res.redirect("/", )
+})
+app.listen(5500, function () {
+  console.log("Server is running on port 5500");
+});
