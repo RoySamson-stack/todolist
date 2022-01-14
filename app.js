@@ -63,14 +63,14 @@ app.get("/", function (req, res) {
           console.log("Successfully added the items to the database")
         }
       })
-
-    }else{
+      res.redirect("/");
+    } else {
       res.render("list", {
         listTitle: "Today",
         newListItems: foundItems
       });
     }
-   
+
   })
 
 
@@ -78,11 +78,20 @@ app.get("/", function (req, res) {
 })
 
 app.post("/", (req, res) => {
-  var item = req.body.newItem;
+  const  itemName = req.body.newItem;
 
-  items.push(item);
+  const item = new Item({
+    name: itemName,
+  })
 
-  res.redirect("/", )
+  item.save();
+
+  res.redirect("/");
+
+})
+
+app.post("/delete", function(req, res){
+  console.log(req.body.checkbox)
 })
 app.listen(5500, function () {
   console.log("Server is running on port 5500");

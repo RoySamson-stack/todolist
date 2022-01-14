@@ -14,14 +14,17 @@
   <div class="box">
 
     <% newListItems.forEach(function(item){%>
+
+    <form action="/delete" method="post">
       <div class="item">
-        <input type="checkbox">
+        <input type="checkbox" name="checkbox" onChange="this.form.submit()">
         <p><%= item.name %></p>
       </div>
-   <% })%>
+    </form>
+    <% })%>
 
     <form class="item" method="post" action="/">
-      <input type="text" class="" name="newItem" placeholder="Enter new Item" autocomplete="off"/>
+      <input type="text" class="" name="newItem" placeholder="Enter new Item" autocomplete="off" />
       <button type="submit" name="button">+</button>
     </form>
   </div>
