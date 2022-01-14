@@ -91,7 +91,15 @@ app.post("/", (req, res) => {
 })
 
 app.post("/delete", function(req, res){
-  console.log(req.body.checkbox)
+const checkedItemId = req.body.checkbox;
+
+
+Item.findByIdAndRemove(checkedItemId, function(err){
+  if(!err){
+    console.log("Successfully deleted the checked item")
+    res.redirect("/");
+  }
+})
 })
 app.listen(5500, function () {
   console.log("Server is running on port 5500");
