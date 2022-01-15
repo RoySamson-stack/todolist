@@ -39,6 +39,12 @@ const item3 = new Item({
 
 const defaultItems = [item1, item2, item3]
 
+const listSchema = {
+  name: String,
+  items: [itemsSchema]
+}
+
+const List = mongoose.model('List', listSchema)
 
 // Item.insertMany(defaultItems, function (err) {
 //   if (err) {
@@ -78,29 +84,67 @@ app.get("/", function (req, res) {
 })
 
 app.post("/", (req, res) => {
-  const  itemName = req.body.newItem;
+  const itemName = req.body.newItem;
+  const listName = req.body.list;
 
   const item = new Item({
     name: itemName,
   })
 
-  item.save();
-
-  res.redirect("/");
-
-})
-
-app.post("/delete", function(req, res){
-const checkedItemId = req.body.checkbox;
-
-
-Item.findByIdAndRemove(checkedItemId, function(err){
-  if(!err){
-    console.log("Successfully deleted the checked item")
+  if(listName.length == "Today"){
+    item.save();
     res.redirect("/");
+  }else{
+    List.findOne({name: listName}, function(err, foundItems){
+      foundItems.itesm.push();
+      foundItems.save();
+      res.redirect("/" + listName);
+    })
   }
+
+ 
+
 })
+
+app.post("/delete", function (req, res) {
+  const checkedItemId = req.body.checkbox;
+
+
+  Item.findByIdAndRemove(checkedItemId, function (err) {
+    if (!err) {
+      console.log("Successfully deleted the checked item")
+      res.redirect("/");
+    }
+  })
 })
+
+app.get('/:customListName', function (req, res) {
+  const customListName = req.params.customListName;
+
+  List.findOne({
+    name: customListName
+  }, function (err, foundItems) {
+    if (!err) {
+      if (!foundItems) {
+
+        const list = new List({
+          name: customListName,
+          items: defaultItems
+        })
+
+        list.save()
+        res.redirect("/")
+      } else {
+        res.render('list', {listTitle: foundItems.name, newListItems: foundItems.items})
+      }
+    }
+  })
+
+})
+
+
+
+
 app.listen(5500, function () {
   console.log("Server is running on port 5500");
 });
