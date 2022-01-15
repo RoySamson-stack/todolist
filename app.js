@@ -1,150 +1,140 @@
-const express = require('express');
+//jshint esversion:6
 
-const bodyParser = require('body-parser');
-const mongoose = require("mongoose")
-
+const express = require("express");
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+const _ = require("lodash");
 
 const app = express();
 
-
-
 app.set('view engine', 'ejs');
 
-app.use(bodyParser.urlencoded({
-  extended: true
-}));
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
-
-mongoose.connect("mongodb://localhost:27017/todolistDB", {
-  useNewUrlParser: true
-});
+mongoose.connect("mongodb://localhost:27017/todolistDB", {useNewUrlParser: true});
 
 const itemsSchema = {
-  name: String,
-}
+  name: String
+};
 
 const Item = mongoose.model("Item", itemsSchema);
 
 
 const item1 = new Item({
-  name: "Buy eggs"
-})
-const item2 = new Item({
-  name: "Go to Freds House"
-})
-const item3 = new Item({
-  name: "Buy Flour"
-})
+  name: "bread"
+});
 
-const defaultItems = [item1, item2, item3]
+const item2 = new Item({
+  name: "milk"
+});
+
+const item3 = new Item({
+  name: "eggs"
+});
+
+const defaultItems = [item1, item2, item3];
 
 const listSchema = {
   name: String,
   items: [itemsSchema]
-}
+};
 
-const List = mongoose.model('List', listSchema)
-
-// Item.insertMany(defaultItems, function (err) {
-//   if (err) {
-//     console.log(err)
-//   } else {
-//     console.log("Successfully added the items")
-//   }
-// })
+const List = mongoose.model("List", listSchema);
 
 
-app.get("/", function (req, res) {
+app.get("/", function(req, res) {
 
-
-
-  Item.find({}, function (err, foundItems) {
+  Item.find({}, function(err, foundItems){
 
     if (foundItems.length === 0) {
-      Item.insertMany(defaultItems, function (err) {
+      Item.insertMany(defaultItems, function(err){
         if (err) {
-          console.log(err)
+          console.log(err);
         } else {
-          console.log("Successfully added the items to the database")
+          console.log("Successfully savevd default items to DB.");
         }
-      })
+      });
       res.redirect("/");
     } else {
-      res.render("list", {
-        listTitle: "Today",
-        newListItems: foundItems
-      });
+      res.render("list", {listTitle: "Today", newListItems: foundItems});
     }
+  });
 
-  })
+});
+
+app.get("/:customListName", function(req, res){
+  const customListName = _.capitalize(req.params.customListName);
+
+  List.findOne({name: customListName}, function(err, foundList){
+    if (!err){
+      if (!foundList){
+        //Create a new list
+        const list = new List({
+          name: customListName,
+          items: defaultItems
+        });
+        list.save();
+        res.redirect("/" + customListName);
+      } else {
+        //Show an existing list
+
+        res.render("list", {listTitle: foundList.name, newListItems: foundList.items});
+      }
+    }
+  });
 
 
 
-})
+});
 
-app.post("/", (req, res) => {
+app.post("/", function(req, res){
+
   const itemName = req.body.newItem;
   const listName = req.body.list;
 
   const item = new Item({
-    name: itemName,
-  })
+    name: itemName
+  });
 
-  if(listName.length == "Today"){
+  if (listName === "Today"){
     item.save();
     res.redirect("/");
-  }else{
-    List.findOne({name: listName}, function(err, foundItems){
-      foundItems.itesm.push();
-      foundItems.save();
+  } else {
+    List.findOne({name: listName}, function(err, foundList){
+      foundList.items.push(item);
+      foundList.save();
       res.redirect("/" + listName);
-    })
+    });
+  }
+});
+
+app.post("/delete", function(req, res){
+  const checkedItemId = req.body.checkbox;
+  const listName = req.body.listName;
+
+  if (listName === "Today") {
+    Item.findByIdAndRemove(checkedItemId, function(err){
+      if (!err) {
+        console.log("Successfully deleted checked item.");
+        res.redirect("/");
+      }
+    });
+  } else {
+    List.findOneAndUpdate({name: listName}, {$pull: {items: {_id: checkedItemId}}}, function(err, foundList){
+      if (!err){
+        res.redirect("/" + listName);
+      }
+    });
   }
 
- 
 
-})
+});
 
-app.post("/delete", function (req, res) {
-  const checkedItemId = req.body.checkbox;
+app.get("/about", function(req, res){
+  res.render("about");
+});
 
-
-  Item.findByIdAndRemove(checkedItemId, function (err) {
-    if (!err) {
-      console.log("Successfully deleted the checked item")
-      res.redirect("/");
-    }
-  })
-})
-
-app.get('/:customListName', function (req, res) {
-  const customListName = req.params.customListName;
-
-  List.findOne({
-    name: customListName
-  }, function (err, foundItems) {
-    if (!err) {
-      if (!foundItems) {
-
-        const list = new List({
-          name: customListName,
-          items: defaultItems
-        })
-
-        list.save()
-        res.redirect("/")
-      } else {
-        res.render('list', {listTitle: foundItems.name, newListItems: foundItems.items})
-      }
-    }
-  })
-
-})
-
-
-
-
-app.listen(5500, function () {
-  console.log("Server is running on port 5500");
+app.listen(3000, function() {
+  console.log("Server started on port 3000");
 });
